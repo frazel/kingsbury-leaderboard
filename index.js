@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kingsbury NFT Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      font-family: 'Cabin Sketch', cursive;
+      color: #fff;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      transition: background 1s ease;
+    }
+    body[data-theme="night"] {
+      background: url('https://imgur.com/51473638-67a0-4020-a603-0d9d3921f4f2') no-repeat center center fixed;
+      background-size: cover;
+    }
+    body[data-theme="day"] {
+      background: linear-gradient(to right, #fdfbfb, #ebedee);
+      color: #222;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDR6eGg4cXJobGY0MHllZHJhcnBpaTBzY2FrNGVieTM0bjVpN2xydSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/rns9XL5RzNsdhcuy3v/giphy.gif') repeat;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+      animation: drift 60s linear infinite;
+    }
+    @keyframes drift {
+      from { background-position: 0 0; }
+      to { background-position: 1000px 1000px; }
+    }
+    header, footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      background-color: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    header h1 {
+      font-size: 3rem;
+      color: #8db96b;
+      text-shadow: 2px 2px 4px #000;
+      transition: transform 0.3s ease;
+    }
+    header h1:hover {
+      transform: scale(1.05);
+    }
+    header img {
+      width: 120px;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+    }
+    header img:hover {
+      transform: rotate(-5deg) scale(1.1);
+    }
+    main {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+      text-align: center;
+    }
+    #leaderboard-list {
+      max-width: 700px;
+      margin: 2rem auto;
+      list-style: none;
+      padding: 0;
+      text-align: left;
+      background-color: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      backdrop-filter: blur(6px);
+      transform: translateZ(0);
+    }
+    #leaderboard-list li {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    #leaderboard-list li:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: scale(1.01) translateY(-2px);
+    }
+    #leaderboard-list li:nth-child(odd) {
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+    .download-btn, .theme-btn {
+      background: #8db96b;
+      color: #111;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px 10px 0 10px;
+      box-shadow: 0 0 10px #8db96baa;
+      transition: all 0.2s ease;
+    }
+    .download-btn:hover, .theme-btn:hover {
+      background: #a8d08d;
+      box-shadow: 0 0 20px #8db96b;
+      transform: translateY(-2px);
+    }
+    a {
+      color: #cde7b0;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    a:hover {
+      text-decoration: underline;
+      color: #ffffff;
+    }
+    footer {
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+    footer a {
+      color: #8db96b;
+      text-decoration: none;
+      font-size: 1rem;
+      display: inline-block;
+      margin-top: 0.5rem;
+    }
+    footer a:hover {
+      text-decoration: underline;
+      color: #fff;
+    }
+  </style>
+</head>
+<body data-theme="night">
+  <header>
+    <img src="https://i.imgur.com/G0gASQZ.png" alt="Kingsbury Logo">
+    <h1>🌾 Kingsbury NFT Leaderboard 🌾</h1>
+    <p>Top Harvesters of the Land</p>
+  </header>
+
+  <main>
+    <section id="leaderboard">
+      <h2>Top 100 Kingsbury NFT Holders</h2>
+      <button class="download-btn" onclick="downloadCSV()">📥 Download CSV</button>
+      <button class="theme-btn" onclick="toggleTheme()">🌗 Toggle Day/Night</button>
+      <ol id="leaderboard-list"><li>Gathering hay bales...</li></ol>
+    </section>
+  </main>
+
+  <footer>
+    <p>Crafted with care at The Online Inn 🏡</p>
+    <a href="https://discord.gg/cEkJyyK" target="_blank">Visit the homestead 🐓</a>
+  </footer>
+
+  <script>
+    const blacklist = [
+      "waxdaofarmer", "waxdaomarket", "wombatmaster", "nfthivepacks",
+      "blend.nefty", "swap.taco", "scurvybot.gm", "swap.alcor", "neftyblocksp", "neftyblocksd",
+      "wallet.taco", "waxportalbot", "x", "wallets", "dig.sb"
+    ];
+
+    let leaderboardData = [];
+
+    async function fetchLeaderboard() {
+      const response = await fetch('https://wax.api.atomicassets.io/atomicassets/v1/accounts?collection_name=kingsburynft&limit=1000');
+      const data = await response.json();
+
+      const sorted = data.data
+        .filter(entry => entry.account && entry.assets > 0 && !blacklist.includes(entry.account))
+        .sort((a, b) => b.assets - a.assets)
+        .slice(0, 100);
+
+      leaderboardData = sorted;
+
+      const list = document.getElementById('leaderboard-list');
+      list.innerHTML = '';
+
+      sorted.forEach((entry, index) => {
+        const li = document.createElement('li');
+        let medal = '';
+        if (index === 0) medal = '👑 ';
+        else if (index === 1) medal = '🥈 ';
+        else if (index === 2) medal = '🥉 ';
+
+        const link = `https://wax.atomichub.io/profile/${entry.account}`;
+        li.innerHTML = `${medal}#${index + 1} - <a href="${link}" target="_blank">${entry.account}</a> (${entry.assets} NFTs)`;
+        list.appendChild(li);
+      });
+    }
+
+    function downloadCSV() {
+      let csv = 'Rank,Wallet,NFT Count\n';
+      leaderboardData.forEach((entry, index) => {
+        csv += `${index + 1},${entry.account},${entry.assets}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'kingsbury_leaderboard.csv';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function toggleTheme() {
+      const current = document.body.getAttribute('data-theme');
+      document.body.setAttribute('data-theme', current === 'night' ? 'day' : 'night');
+    }
+
+    fetchLeaderboard();
+  </script>
+</body>
+</html>
